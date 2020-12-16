@@ -1,8 +1,80 @@
-{{ range . }}
-<div>
-  <!-- {{ . }} -->
-  {{ .UserName }}
-  {{ .ScreenName }}
-  {{ .Text }}
-</div>
-{{ end }}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv='X-UA-Compatible' content='ie=edge'>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>{{ .Date.Format "2006年1月2日" }}</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <main class="container">
+    <h2>{{ .Date.Format "2006年1月2日" }}</h2>
+
+    <h4 id="tweets">ツイート: {{ .CountTweet }} 件（RT: {{ .CountRT }} 件）</h4>
+    {{ range .Tweets }}
+    <div id="{{ .TweetID }}" class="card mb-2">
+      <div class="card-header p-0">
+        <img src="{{ .UserImage }}">
+        <span{{ if eq .IsRetweet false }} class="font-weight-bold"{{ end }}>{{ .UserName }}</span>
+        {{ extLink .UserURL (printf "%s%s" "@" .ScreenName) }}
+      </div>
+      <div class="card-body p-2">
+        {{ if .IsRetweet }}
+          <span class="badge badge-success">RT</span>
+        {{ end }}
+        {{ if .ReplyToID }}
+          <span class="reply badge badge-primary">
+            <a href="#{{ .ReplyToID }}">
+              Reply
+            </a>
+          </span>
+        {{ end }}
+        {{ .Text }}
+        <div>
+        {{ if .IsRetweet }}
+          <small class="text-muted">
+            Post: {{ extLink .TweetURL .OriginDate }}
+          </small>&nbsp;
+          <small class="text-muted">
+            RT: {{ .Date }}
+          </small>
+        {{ else }}
+          <small class="text-muted">
+            Post: {{ extLink .TweetURL .Date }}
+          </small>
+        {{ end }}
+        </div>
+      </div>
+    </div>
+    {{ end }}
+
+    <h4 id="favs">お気に入り: {{ .CountFav }} 件</h4>
+    {{ range .Favs }}
+    <div class="card mb-2">
+      <div class="card-header p-0">
+        <img src="{{ .User.Image }}">
+        <span>{{ .User.Name }}</span>
+        {{ extLink (makeUserURL .User.ID) (printf "%s%s" "@" .User.ScreenName) }}
+      </div>
+      <div class="card-body p-2">
+        {{ if .ReplyToID }}
+          <span class="reply badge badge-primary">
+            <a href="#{{ .ReplyToID }}">
+              Reply
+            </a>
+          </span>
+        {{ end }}
+        {{ .Text }}
+        <div>
+          <small class="text-muted">
+            Post: {{ extLink (makeTweetURL .TweetID) .Date }}
+          </small>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  </main>
+</body>
+</html>
