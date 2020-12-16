@@ -77,8 +77,6 @@ type Tweet struct {
 	Text       string
 	Date       string
 	OriginDate string
-	UserURL    string
-	TweetURL   string
 }
 
 // ViewData テンプレートへ渡すデータ
@@ -175,8 +173,6 @@ func main() {
 		jsonTweets := make([]*TweetJSON, 0)
 		err = json.Unmarshal(readFile, &jsonTweets)
 		if err != nil {
-			// fmt.Println(err.Error())
-			// os.Exit(1)
 			fmt.Printf("[%d/%d] <ERROR> JSON (Tweet) parse error: %s\n", i+1, total, file)
 			continue
 		}
@@ -205,8 +201,6 @@ func main() {
 			tweet.IsRetweet = post.IsRetweet
 			tweet.ReplyToID = post.ReplyToID
 			tweet.Date = twitterTimeFormat(post.Date)
-			tweet.UserURL = userURLBase + tweet.UserID
-			tweet.TweetURL = tweetURLBase + tweet.TweetID
 
 			tweets = append(tweets, tweet)
 		}
@@ -228,8 +222,6 @@ func main() {
 			Favs:       favs,
 		}
 
-		// var tpl *template.Template
-		// tpl = template.Must(template.ParseFiles("templates/tweets.html"))
 		templates := []string{"templates/tweets.html"}
 		f := template.FuncMap{
 			"makeUserURL":  makeUserURL,
@@ -240,8 +232,6 @@ func main() {
 		buf := &bytes.Buffer{}
 		err = tpl.Execute(buf, viewData)
 		if err != nil {
-			// fmt.Println(err.Error())
-			// os.Exit(1)
 			fmt.Printf("[%d/%d] <ERROR> Template execute error: %s\n", i+1, total, file)
 			continue
 		}
@@ -252,8 +242,6 @@ func main() {
 
 		writeFile, err := os.OpenFile(writePath, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
-			// fmt.Println(err.Error())
-			// os.Exit(1)
 			fmt.Printf("[%d/%d] <ERROR> File write error: %s\n", i+1, total, file)
 			continue
 		}

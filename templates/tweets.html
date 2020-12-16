@@ -18,7 +18,7 @@
       <div class="card-header p-0">
         <img src="{{ .UserImage }}">
         <span{{ if eq .IsRetweet false }} class="font-weight-bold"{{ end }}>{{ .UserName }}</span>
-        {{ extLink .UserURL (printf "%s%s" "@" .ScreenName) }}
+        {{ extLink (makeUserURL .UserID) (printf "%s%s" "@" .ScreenName) }}
       </div>
       <div class="card-body p-2">
         {{ if .IsRetweet }}
@@ -35,14 +35,14 @@
         <div>
         {{ if .IsRetweet }}
           <small class="text-muted">
-            Post: {{ extLink .TweetURL .OriginDate }}
+            Post: {{ extLink (makeTweetURL .TweetID) .OriginDate }}
           </small>&nbsp;
           <small class="text-muted">
             RT: {{ .Date }}
           </small>
         {{ else }}
           <small class="text-muted">
-            Post: {{ extLink .TweetURL .Date }}
+            Post: {{ extLink (makeTweetURL .TweetID) .Date }}
           </small>
         {{ end }}
         </div>
