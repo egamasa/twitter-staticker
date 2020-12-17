@@ -21,6 +21,11 @@ const (
 	tweetURLBase string = "https://twitter.com/twitter/status/"
 )
 
+type SourceJSON struct {
+	Timeline []*TweetJSON `json:"timeline"`
+	Favorite []*Fav       `json:"favorites"`
+}
+
 // TweetJSON ツイート情報
 type TweetJSON struct {
 	TweetID   string `json:"id_str"`
@@ -28,7 +33,7 @@ type TweetJSON struct {
 	IsRetweet bool   `json:"retweeted"`
 	User      User   `json:"user"`
 	RT        RT     `json:"retweeted_status"`
-	Text      string `json:"text"`
+	Text      string `json:"full_text"`
 	Date      string `json:"created_at"`
 }
 
@@ -37,7 +42,7 @@ type Fav struct {
 	TweetID   string `json:"id_str"`
 	ReplyToID string `json:"in_reply_to_status_id_str"`
 	User      User   `json:"user"`
-	Text      string `json:"text"`
+	Text      string `json:"full_text"`
 	Date      string `json:"created_at"`
 }
 
@@ -53,7 +58,7 @@ type User struct {
 type RT struct {
 	ID     string `json:"id_str"`
 	RTUser RTUser `json:"user"`
-	Text   string `json:"text"`
+	Text   string `json:"full_text"`
 	Date   string `json:"created_at"`
 }
 
@@ -170,8 +175,8 @@ func main() {
 			os.Exit(1)
 		}
 
-		jsonTweets := make([]*TweetJSON, 0)
-		err = json.Unmarshal(readFile, &jsonTweets)
+		jsonSource := new(SourceJSON)
+		err = json.Unmarshal(readFile, &jsonSource)
 		if err != nil {
 			fmt.Printf("[%d/%d] <ERROR> JSON (Tweet) parse error: %s\n", i+1, total, file)
 			continue
@@ -179,7 +184,7 @@ func main() {
 
 		tweets := make([]*Tweet, 0)
 		var countRt int = 0
-		for _, post := range jsonTweets {
+		for _, post := range jsonSource.Timeline {
 			tweet := new(Tweet)
 			if post.IsRetweet {
 				tweet.TweetID = post.RT.ID
@@ -205,21 +210,18 @@ func main() {
 			tweets = append(tweets, tweet)
 		}
 
-		// ToDo: ふぁぼ取得元データを切り替える
-		favs := make([]*Fav, 0)
-		err = json.Unmarshal(readFile, &favs)
-		if err != nil {
-			fmt.Printf("[%d/%d] <ERROR> JSON (Fav) parse error: %s\n", i+1, total, file)
-			continue
+		for _, post := range jsonSource.Favorite {
+			post.Text = tweetTextTrim(post.Text)
+			post.Date = twitterTimeFormat(post.Date)
 		}
 
 		viewData := ViewData{
-			Date:       twitterTimeParse(jsonTweets[0].Date),
+			Date:       twitterTimeParse(jsonSource.Timeline[0].Date),
 			CountTweet: len(tweets),
 			CountRT:    countRt,
-			CountFav:   len(favs),
+			CountFav:   len(jsonSource.Favorite),
 			Tweets:     tweets,
-			Favs:       favs,
+			Favs:       jsonSource.Favorite,
 		}
 
 		templates := []string{"templates/tweets.html"}
